@@ -3,13 +3,11 @@ from typing import Annotated
 from sqlmodel import SQLModel, Field, create_engine, Session
 
 from constant.URLConstant import HEALTH_CHECK, API_PREFIX
-from constant.DbConstant import DB_HOST, DB_USER, DB_PASSWORD, DB_NAME
-from controller.HealthController import *
+from controller.HealthController import get_health_check_response
+from services.DbConnectionService import db_connection
 
 
-DATABASE_URL = f"mysql+mysqlclient://{DB_USER}:''@{DB_HOST}/{DB_NAME}"
-engine = create_engine(DATABASE_URL)
-
+engine = db_connection()
 app = FastAPI()
 
 # Create a router with a prefix
@@ -24,10 +22,18 @@ async def health(user_agent: Annotated[str | None, Header()] = None):
 
 @api_router.get("/test")
 async def test(user_agent: Annotated[str | None, Header()] = None):
+
+    try:
+        with engine.connect() as connection:
+            db_status = "Database connection successful!"
+    except OperationalError as e:
+        db_status = f"Database connection failed: {e}"
     response = {
         "message": "Hello Test",
         "status": "success",
-        "User-Agent": user_agent
+        "User-Agent": user_agent,
+        "engine": str(engine),
+        "db_status": db_status,
     }
     return response
 
