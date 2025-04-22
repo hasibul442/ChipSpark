@@ -7,10 +7,10 @@
 ### Generate a Requirements File on Your Original Device:
 
 ```sh
-    pip freeze > requirements.txt
+    pip freeze > package.txt
 ```
 
 ### Install the Requirements on Your New Device:
 ```sh
-    pip install -r requirements.txt
+    pip install -r package.txt
 ```
