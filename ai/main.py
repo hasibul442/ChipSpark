@@ -1,5 +1,14 @@
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, Header
+from typing import Annotated
+from sqlmodel import SQLModel, Field, create_engine, Session
+
 from constant.URLConstant import HEALTH_CHECK, API_PREFIX
+from constant.DbConstant import DB_HOST, DB_USER, DB_PASSWORD, DB_NAME
+from controller.HealthController import *
+
+
+DATABASE_URL = f"mysql+mysqlclient://{DB_USER}:''@{DB_HOST}/{DB_NAME}"
+engine = create_engine(DATABASE_URL)
 
 app = FastAPI()
 
@@ -7,19 +16,18 @@ app = FastAPI()
 api_router = APIRouter(prefix=API_PREFIX)
 
 
+
+
 @api_router.get(HEALTH_CHECK)
-async def health():
-    response = {
-        "message": "Ai Microservice is Running Ok",
-        "status": "success"
-    }
-    return response
+async def health(user_agent: Annotated[str | None, Header()] = None):
+    return get_health_check_response(user_agent)
 
 @api_router.get("/test")
-async def test():
+async def test(user_agent: Annotated[str | None, Header()] = None):
     response = {
         "message": "Hello Test",
-        "status": "success"
+        "status": "success",
+        "User-Agent": user_agent
     }
     return response
 
